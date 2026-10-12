@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MONTRA — Product</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#0b0b0a;
+    --charcoal:#1c1c1a;
+    --offwhite:#f4f2ec;
+    --warmwhite:#faf9f6;
+    --deepgrey:#3a3937;
+    --beige:#e6dfd0;
+    --brass:#a9865a;
+    --brass-light:#c9a878;
+    --line: rgba(11,11,10,0.1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--warmwhite);
+    color:var(--black);
+    font-family:'Inter',sans-serif;
+    overflow-x:hidden;
+  }
+  a{color:inherit;text-decoration:none;}
+  img{display:block;max-width:100%;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+
+  /* ---------- Header (simplified version of the shop header) ---------- */
+  header{
+    position:sticky;top:0;z-index:100;
+    background:rgba(250,249,246,0.9);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  .header-inner{
+    max-width:1360px;margin:0 auto;padding:0 40px;height:72px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .logo{font-family:'Fraunces',serif;font-size:24px;letter-spacing:0.08em;font-weight:500;}
+  .header-links{display:flex;align-items:center;gap:26px;font-size:13px;letter-spacing:.05em;text-transform:uppercase;font-weight:500;}
+  .cart-link{position:relative;display:flex;align-items:center;}
+  .cart-link svg{width:19px;height:19px;stroke:var(--black);fill:none;stroke-width:1.4;}
+  .cart-count{
+    position:absolute;top:-7px;right:-9px;background:var(--black);color:var(--offwhite);
+    font-size:9px;width:15px;height:15px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  /* ---------- Layout ---------- */
+  main{max-width:1360px;margin:0 auto;padding:36px 40px 120px;}
+  .crumbs{font-size:12px;color:#888;margin-bottom:26px;letter-spacing:.03em;}
+  .crumbs a:hover{color:var(--black);}
+  .product{display:grid;grid-template-columns:1.1fr 1fr;gap:64px;align-items:start;}
+
+  .gallery{background:var(--beige);aspect-ratio:3/4;overflow:hidden;position:sticky;top:100px;}
+  .gallery img{width:100%;height:100%;object-fit:cover;}
+
+  .eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--brass);font-weight:600;}
+  h1{font-family:'Fraunces',serif;font-weight:400;font-size:clamp(28px,3.4vw,42px);line-height:1.1;margin:12px 0 16px;letter-spacing:-0.01em;}
+  .price-row{display:flex;align-items:center;gap:12px;font-size:20px;font-weight:600;margin-bottom:22px;}
+  .price-row .old{color:#999;text-decoration:line-through;font-weight:400;font-size:16px;}
+  .desc{font-size:15px;line-height:1.75;color:var(--deepgrey);margin-bottom:30px;}
+
+  .option-label{display:flex;justify-content:space-between;font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-bottom:12px;}
+  .option-label span{font-weight:400;color:#888;text-transform:none;letter-spacing:0;}
+  .options{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:26px;}
+  .opt{
+    min-width:52px;padding:12px 16px;border:1px solid #d6d3cb;font-size:13px;font-weight:500;
+    background:#fff;transition:.2s;text-align:center;
+  }
+  .opt:hover{border-color:var(--black);}
+  .opt.selected{background:var(--black);color:var(--offwhite);border-color:var(--black);}
+
+  .qty-row{display:flex;align-items:center;gap:0;border:1px solid #d6d3cb;width:fit-content;margin-bottom:28px;background:#fff;}
+  .qty-row button{width:44px;height:46px;font-size:18px;}
+  .qty-row button:hover{background:var(--beige);}
+  .qty-row span{min-width:44px;text-align:center;font-size:14px;font-weight:600;}
+
+  .add-btn{
+    width:100%;background:var(--black);color:var(--offwhite);padding:18px;
+    font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;transition:.3s;
+  }
+  .add-btn:hover{background:var(--deepgrey);}
+  .add-btn:disabled{background:#bbb;cursor:not-allowed;}
+  .msg{font-size:14px;margin-top:14px;min-height:20px;}
+  .msg.error{color:#b3261e;}
+  .msg a{border-bottom:1px solid var(--black);font-weight:600;}
+
+  .perks{margin-top:34px;border-top:1px solid var(--line);}
+  .perk{padding:16px 0;border-bottom:1px solid var(--line);font-size:13.5px;color:var(--deepgrey);display:flex;justify-content:space-between;gap:12px;}
+  .perk strong{color:var(--black);font-weight:600;}
+
+  .state{text-align:center;padding:120px 20px;color:#888;}
+  .state a{border-bottom:1px solid var(--black);color:var(--black);font-weight:600;}
+
+  /* sticky bar that only appears on phones */
+  .mobile-bar{
+    display:none;position:fixed;left:0;right:0;bottom:0;z-index:150;
+    background:#fff;border-top:1px solid var(--line);padding:12px 16px;
+    align-items:center;gap:14px;
+    padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+  .mobile-bar .mb-price{font-weight:600;font-size:16px;white-space:nowrap;}
+  .mobile-bar .add-btn{flex:1;padding:15px;}
+
+  /* toast */
+  .toast{
+    position:fixed;bottom:28px;left:50%;transform:translate(-50%,160%);
+    background:var(--black);color:var(--offwhite);padding:14px 26px;font-size:13px;
+transition:transform .45s cubic-bezier(.2,.8,.2,1), opacity .45s ease, visibility .45s;    opacity:0; visibility:hidden;
+  }
+.toast.show{transform:translate(-50%,0); opacity:1; visibility:visible;}
+  /* ---------- Phones / small screens ---------- */
+  @media(max-width:860px){
+    .header-inner{padding:0 18px;height:64px;}
+    main{padding:20px 18px 130px;}
+    .product{grid-template-columns:1fr;gap:26px;}
+    .gallery{position:static;aspect-ratio:4/5;margin:0 -18px;}   /* full-width image on phones */
+    .opt{padding:14px 18px;}                                      /* bigger tap targets */
+    .qty-row button{width:50px;height:50px;}
+    .desktop-add{display:none;}                                   /* the sticky bar replaces it */
+    .mobile-bar{display:flex;}
+    .toast{bottom:90px;}
+  }
+
+.wish-btn{margin-top:12px;width:100%;border:1px solid #d6d3cb;padding:15px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;background:#fff;transition:.2s;}
+.wish-btn:hover{border-color:var(--black);}
+.wish-btn.saved{background:var(--black);color:var(--offwhite);border-color:var(--black);}
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="montra.html" class="logo">MONTRA</a>
+    <div class="header-links">
+      <a href="montra.html#shop">Shop</a>
+      <a href="montra.html#cart" class="cart-link" aria-label="Cart">
+        <svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L4 3H2"/><circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg>
+        <span class="cart-count" id="cartCount">0</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main id="page">
+  <div class="state">Loading...</div>
+</main>
+
+<!-- Add to cart bar shown on phones only -->
+<div class="mobile-bar" id="mobileBar" hidden>
+  <div class="mb-price" id="mbPrice"></div>
+  <button class="add-btn" id="mbAddBtn" type="button">Add to cart</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = 'http://localhost:3001';
+
+  // ---------- Helpers ----------
+
+  // Escapes text before putting it in the page (stops HTML injection)
+  function esc(text) {
+    return String(text ?? '').replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+  }
+  function formatPrice(n) { return '£' + n.toLocaleString(); }
+
+  const getToken = () => localStorage.getItem('montra_token');
+  const isLoggedIn = () => !!getToken();
+
+  let toastTimer;
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2400);
+  }
+
+  // Turns "S, M,L" into ["S","M","L"] (ignores empty bits)
+  const splitList = text => String(text || '').split(',').map(s => s.trim()).filter(Boolean);
+
+  // ---------- Page state ----------
+  let product = null;
+  let selectedSize = null;
+  let selectedColor = null;
+  let quantity = 1;
+
+  const page = document.getElementById('page');
+
+  // Which product? It comes from the address: product.html?id=3
+  const productId = parseInt(new URLSearchParams(window.location.search).get('id'));
+
+  async function loadProduct() {
+    if (!productId) return showMissing();
+    try {
+      const res = await fetch(API + '/api/products/' + productId);
+      if (!res.ok) return showMissing();
+      product = await res.json();
+      render();
+    } catch (err) {
+      page.innerHTML = '<div class="state">Could not reach the server. Please try again.</div>';
+    }
+  }
+
+  function showMissing() {
+    page.innerHTML = '<div class="state">This product could not be found.<br><br><a href="montra.html">Back to the shop</a></div>';
+  }
+
+  function render() {
+    document.title = product.name + ' — MONTRA';
+
+    const sizes = splitList(product.sizes);
+    const colors = splitList(product.colors);
+    const soldOut = product.stock <= 0;
+
+    // If there's only one choice, select it automatically
+    selectedSize = sizes.length === 1 ? sizes[0] : null;
+    selectedColor = colors.length === 1 ? colors[0] : null;
+
+    page.innerHTML = `
+      <div class="crumbs"><a href="montra.html">Home</a> / <a href="montra.html#shop">Shop</a> / ${esc(product.name)}</div>
+
+      <div class="product">
+        <div class="gallery"><img id="mainImg" src="${esc(product.image)}" alt="${esc(product.name)}"></div>
+        <div>
+          <span class="eyebrow">${esc(product.collection)}</span>
+          <h1>${esc(product.name)}</h1>
+          <div class="price-row">
+            <span>${formatPrice(product.price)}</span>
+            ${product.oldPrice ? `<span class="old">${formatPrice(product.oldPrice)}</span>` : ''}
+          </div>
+          <p class="desc">${esc(product.description)}</p>
+
+          ${sizes.length ? `
+            <div class="option-label">Size <span id="sizeNote"></span></div>
+            <div class="options" id="sizeOptions">
+              ${sizes.map(s => `<button type="button" class="opt ${s === selectedSize ? 'selected' : ''}" data-size="${esc(s)}">${esc(s)}</button>`).join('')}
+            </div>` : ''}
+
+          ${colors.length ? `
+            <div class="option-label">Color <span id="colorNote">${selectedColor ? esc(selectedColor) : ''}</span></div>
+            <div class="options" id="colorOptions">
+              ${colors.map(c => `<button type="button" class="opt ${c === selectedColor ? 'selected' : ''}" data-color="${esc(c)}">${esc(c)}</button>`).join('')}
+            </div>` : ''}
+
+          <div class="option-label">Quantity</div>
+          <div class="qty-row">
+            <button type="button" id="qtyMinus" aria-label="Decrease">−</button>
+            <span id="qtyValue">1</span>
+            <button type="button" id="qtyPlus" aria-label="Increase">+</button>
+          </div>
+
+          <button class="add-btn desktop-add" id="addBtn" type="button" ${soldOut ? 'disabled' : ''}>
+            ${soldOut ? 'Sold out' : 'Add to cart'}
+          </button>
+          <div class="msg" id="msg"></div>
+          <button type="button" class="wish-btn" id="wishBtn">Save to wishlist</button>
+
+          <div class="perks">
+            <div class="perk"><strong>Delivery</strong><span>Free UK delivery over £75</span></div>
+            <div class="perk"><strong>Returns</strong><span>30-day free returns</span></div>
+            <div class="perk"><strong>Availability</strong><span>${soldOut ? 'Currently sold out' : (product.stock <= 5 ? 'Only ' + product.stock + ' left' : 'In stock')}</span></div>
+          </div>
+        </div>
+      </div>`;
+
+    // Phone bar
+    const bar = document.getElementById('mobileBar');
+    bar.hidden = false;
+    document.getElementById('mbPrice').textContent = formatPrice(product.price);
+    const mbBtn = document.getElementById('mbAddBtn');
+    mbBtn.disabled = soldOut;
+    mbBtn.textContent = soldOut ? 'Sold out' : 'Add to cart';
+    mbBtn.onclick = addToCart;
+
+    // Size buttons: highlight the chosen one
+    document.querySelectorAll('[data-size]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedSize = btn.dataset.size;
+        document.querySelectorAll('[data-size]').forEach(b => b.classList.toggle('selected', b === btn));
+        document.getElementById('msg').textContent = '';
+      });
+    });
+
+    // Color buttons: highlight the chosen one and show its name
+    document.querySelectorAll('[data-color]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        selectedColor = btn.dataset.color;
+        document.querySelectorAll('[data-color]').forEach(b => b.classList.toggle('selected', b === btn));
+        document.getElementById('colorNote').textContent = selectedColor;
+        showColorImage(selectedColor);  
+        document.getElementById('msg').textContent = '';
+      });
+    });
+
+    // Quantity buttons (never below 1, never above the stock)
+    document.getElementById('qtyMinus').addEventListener('click', () => setQty(quantity - 1));
+    document.getElementById('qtyPlus').addEventListener('click', () => setQty(quantity + 1));
+
+    document.getElementById('addBtn').addEventListener('click', addToCart);    document.getElementById('wishBtn').addEventListener('click', toggleWishlist);
+    markWish();  
+     if (selectedColor) showColorImage(selectedColor);   // single-color products show their photo straight away    // show the right state if it's already saved
+
+  }
+
+  function setQty(n) {
+    quantity = Math.max(1, Math.min(n, Math.max(product.stock, 1)));
+    document.getElementById('qtyValue').textContent = quantity;
+  }
+
+  function setMessage(html, isError) {
+    const box = document.getElementById('msg');
+    box.className = 'msg' + (isError ? ' error' : '');
+    box.innerHTML = html;
+  }
+
+  async function addToCart() {
+    // 1. must be logged in
+    if (!isLoggedIn()) {
+      setMessage('Please <a href="montra.html#login">log in</a> to add items to your cart.', true);
+      return;
+    }
+
+    // 2. must pick a size and color if the product has them
+    if (splitList(product.sizes).length && !selectedSize) {
+      setMessage('Please choose a size.', true);
+      return;
+    }
+    if (splitList(product.colors).length && !selectedColor) {
+      setMessage('Please choose a color.', true);
+      return;
+    }
+
+    try {
+      const res = await fetch(API + '/api/cart', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + getToken(),
+        },
+        body: JSON.stringify({
+          productId: product.id,
+          quantity,
+          size: selectedSize,
+          color: selectedColor,
+        }),
+      });
+      const data = await res.json();
+
+      if (res.status === 401) {
+        localStorage.removeItem('montra_token');
+        setMessage('Your session expired. Please <a href="montra.html#login">log in</a> again.', true);
+        return;
+      }
+      if (!res.ok) { setMessage(data.error || 'Could not add to cart.', true); return; }
+
+      showToast('Added to cart');
+      setMessage('<a href="montra.html#cart">View your cart</a>', false);
+      updateCartBadge();
+    } catch (err) {
+      setMessage('Could not reach the server. Please try again.', true);
+    }
+  }
+
+  // Shows how many items are in the cart (0 if logged out)
+  async function updateCartBadge() {
+    const badge = document.getElementById('cartCount');
+    if (!isLoggedIn()) { badge.textContent = 0; return; }
+    try {
+      const res = await fetch(API + '/api/cart', { headers: { Authorization: 'Bearer ' + getToken() } });
+      if (!res.ok) { badge.textContent = 0; return; }
+      const items = await res.json();
+      badge.textContent = items.length;
+    } catch (err) {
+      badge.textContent = 0;
+    }
+  }
+
+  // ---------- Photos per color ----------
+
+// The admin saves these as JSON text, like {"Black":"photo1","White":"photo2"}
+function colorPhotos() {
+  try { return JSON.parse(product.colorImages || '{}'); } catch (e) { return {}; }
+}
+
+// Swap the big photo to the chosen color's picture (or the main photo if that color has none)
+function showColorImage(color) {
+  const img = document.getElementById('mainImg');
+  img.src = colorPhotos()[color] || product.image;
+}
+
+// ---------- Wishlist ----------
+let wishIds = new Set();   // ids of the products this customer has saved
+
+// Update the button text and color to match the saved state
+function markWish() {
+  const btn = document.getElementById('wishBtn');
+  if (!btn || !product) return;
+  const saved = wishIds.has(product.id);
+  btn.classList.toggle('saved', saved);
+  btn.textContent = saved ? '♥ Saved to wishlist' : 'Save to wishlist';
+}
+
+async function loadWishlist() {
+  if (!isLoggedIn()) return;
+  try {
+    const res = await fetch(API + '/api/wishlist', { headers: { Authorization: 'Bearer ' + getToken() } });
+    if (!res.ok) return;
+    wishIds = new Set((await res.json()).map(i => i.productId));
+    markWish();
+  } catch (err) { console.error(err); }
+}
+
+async function toggleWishlist() {
+  if (!isLoggedIn()) {
+    setMessage('Please <a href="montra.html#login">log in</a> to save items.', true);
+    return;
+  }
+  const saved = wishIds.has(product.id);
+  try {
+    const res = await fetch(API + '/api/wishlist' + (saved ? '/' + product.id : ''), {
+      method: saved ? 'DELETE' : 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getToken() },
+      body: saved ? undefined : JSON.stringify({ productId: product.id }),
+    });
+    if (!res.ok) throw new Error();
+    if (saved) wishIds.delete(product.id); else wishIds.add(product.id);
+    markWish();
+    showToast(saved ? 'Removed from wishlist' : 'Saved to wishlist');
+  } catch (err) {
+    setMessage('Could not update your wishlist.', true);
+  }
+}
+
+loadWishlist();
+  loadProduct();
+  updateCartBadge();
+</script>
+</body>
+</html>

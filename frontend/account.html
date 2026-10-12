@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Account — MONTRA</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: Arial, Helvetica, sans-serif;
+      background: #f3f1ec; color: #111;
+    }
+    header {
+      background: #111; color: #fff; padding: 20px 36px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    header a { color: #fff; text-decoration: none; }
+    .brand { font-size: 22px; letter-spacing: 3px; font-weight: bold; }
+    main { max-width: 860px; margin: 40px auto; padding: 0 20px; }
+    h1 { margin: 0 0 6px; }
+    h2 { margin: 36px 0 16px; }
+    .muted { color: #6b6b6b; font-size: 14px; }
+    .card {
+      background: #fff; border: 1px solid #e3e0d8;
+      border-radius: 10px; padding: 24px; margin-bottom: 16px;
+    }
+    .order-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+    .items { list-style: none; padding: 0; margin: 14px 0; }
+    .items li { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f0eee8; }
+    .items img { width: 48px; height: 60px; object-fit: cover; border-radius: 4px; background: #eee; }
+    .order-foot { display: flex; justify-content: space-between; align-items: center; }
+    .badge {
+      display: inline-block; padding: 4px 12px; border-radius: 20px;
+      font-size: 13px; font-weight: bold; text-transform: capitalize; background: #eee;
+    }
+    .badge.paid { background: #e8f0fe; color: #1a47a0; }
+    .badge.shipped { background: #fff4d6; color: #8a5a00; }
+    .badge.delivered { background: #e2f5e6; color: #1d6b32; }
+    .badge.cancelled { background: #fde8e6; color: #b3261e; }
+    .logout {
+      background: none; border: 1px solid #555; color: #fff;
+      padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;
+    }
+
+    /* Phone layout for the header */
+@media (max-width: 600px) {
+  header { padding: 14px 16px; gap: 10px; }
+  header > div { display: flex; align-items: center; gap: 12px; }   /* puts the link and button in one row */
+  header > div a { margin-right: 0 !important; font-size: 13px; white-space: nowrap; }
+  .brand { font-size: 18px; letter-spacing: 2px; }
+  .logout { padding: 8px 12px; font-size: 13px; white-space: nowrap; }
+  main { margin: 24px auto; }
+}
+
+  </style>
+</head>
+<body>
+  <header>
+    <a href="montra.html" class="brand">MONTRA</a>
+    <div>
+      <a href="montra.html" style="margin-right:20px">Continue shopping</a>
+      <button class="logout" id="logoutBtn">Log out</button>
+    </div>
+  </header>
+
+  <main>
+    <h1>My Account</h1>
+    <div id="profile" class="muted">Loading...</div>
+
+    <h2>Order history</h2>
+    <div id="orders"></div>
+  </main>
+
+<script>
+  const API = 'http://localhost:3001';
+  const CURRENCY = '£';   // keep the same as the admin panel
+  const TOKEN_KEY = 'montra_token';  // same key the shop uses when logging in
+
+  // Escapes text before putting it in the page (stops HTML injection)
+  function esc(text) {
+    return String(text ?? '').replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+  }
+
+  // Not logged in? Send them back to the shop.
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token) window.location.href = 'montra.html';
+
+  // Helper for backend calls, adds the token automatically
+  async function api(path) {
+    const res = await fetch(API + path, {
+      headers: { Authorization: 'Bearer ' + token },
+    });
+    // Expired or invalid token: log out and go back to the shop
+    if (res.status === 401) {
+      localStorage.removeItem(TOKEN_KEY);
+      window.location.href = 'montra.html';
+      return;
+    }
+    if (!res.ok) throw new Error('Could not load your account');
+    return res.json();
+  }
+
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    localStorage.removeItem(TOKEN_KEY);
+    window.location.href = 'montra.html';
+  });
+
+  async function load() {
+    try {
+      // fetch the profile and the orders at the same time
+      const [user, orders] = await Promise.all([
+        api('/api/account/me'),
+        api('/api/account/orders'),
+      ]);
+
+      document.getElementById('profile').innerHTML = `
+        <div class="card">
+          <strong style="font-size:18px">${esc(user.name)}</strong><br>
+          <span class="muted">${esc(user.email)}</span><br>
+          <span class="muted">Member since ${new Date(user.createdAt).toLocaleDateString()}</span>
+        </div>`;
+
+      const box = document.getElementById('orders');
+      if (orders.length === 0) {
+        box.innerHTML = '<div class="card muted">You haven\'t placed any orders yet.</div>';
+        return;
+      }
+
+      box.innerHTML = orders.map(o => `
+        <div class="card">
+          <div class="order-head">
+            <strong>Order #${o.id}</strong>
+            <span class="badge ${esc(o.status)}">${esc(o.status)}</span>
+          </div>
+          <div class="muted">${new Date(o.createdAt).toLocaleDateString()}</div>
+          <ul class="items">
+            ${o.items.map(i => `
+              <li>
+                <img src="${esc(i.product.image)}" alt="">
+                <div>
+                  ${esc(i.product.name)} × ${i.quantity}<br>
+                  <span class="muted">${[i.size, i.color].filter(Boolean).map(esc).join(' / ')}</span>
+                </div>
+              </li>`).join('')}
+          </ul>
+          <div class="order-foot">
+            <span class="muted">${esc([o.address, o.city, o.country].filter(Boolean).join(', '))}</span>
+            <strong>${CURRENCY}${o.total.toFixed(2)}</strong>
+          </div>
+        </div>`).join('');
+    } catch (err) {
+      document.getElementById('profile').textContent = err.message;
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>

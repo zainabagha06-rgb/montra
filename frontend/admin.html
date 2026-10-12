@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MONTRA — Admin</title>
+  <style>
+    /* ---------- Base look (matches the MONTRA black + off-white style) ---------- */
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }   /* makes the "hidden" attribute always win */
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f3f1ec;
+      color: #111;
+    }
+    h1, h2 { margin: 0 0 16px; }
+    button { font-family: inherit; cursor: pointer; }
+
+    /* ---------- Login ---------- */
+    #loginView { max-width: 900px; margin: 60px auto; padding: 0 20px; }
+    .card {
+      background: #fff;
+      border: 1px solid #e3e0d8;
+      border-radius: 10px;
+      padding: 28px;
+    }
+    label { display: block; font-weight: bold; margin: 14px 0 6px; }
+    input[type=email], input[type=password] {
+      width: 100%; padding: 13px; font-size: 16px;
+      border: 1px solid #d6d3cb; border-radius: 6px;
+    }
+    .btn {
+      background: #111; color: #fff; border: 0;
+      padding: 14px 24px; font-size: 16px; border-radius: 6px; margin-top: 20px;
+    }
+    .error { color: #b3261e; margin-top: 14px; min-height: 20px; }
+
+    /* ---------- Dashboard layout: sidebar + content ---------- */
+    #dashboard { display: flex; min-height: 100vh; }
+    aside {
+      width: 220px; background: #111; color: #fff;
+      padding: 28px 18px; flex-shrink: 0;
+    }
+    aside .brand { font-size: 22px; letter-spacing: 3px; font-weight: bold; margin-bottom: 30px; }
+    aside button.nav {
+      display: block; width: 100%; text-align: left;
+      background: none; border: 0; color: #bbb;
+      padding: 12px; font-size: 15px; border-radius: 6px; margin-bottom: 4px;
+    }
+    aside button.nav:hover { background: #222; color: #fff; }
+    aside button.nav.active { background: #fff; color: #111; font-weight: bold; }
+    aside .logout { margin-top: 30px; color: #888; font-size: 14px; background: none; border: 0; padding: 12px; }
+    main { flex: 1; padding: 36px; max-width: 1000px; }
+
+    /* ---------- Orders ---------- */
+    .order { margin-bottom: 18px; }
+    .order-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    .order-head strong { font-size: 18px; }
+    .muted { color: #6b6b6b; font-size: 14px; }
+    .items { margin: 14px 0; padding: 0; list-style: none; }
+    .items li { padding: 6px 0; border-bottom: 1px solid #f0eee8; }
+    .order-foot { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    select { padding: 8px 10px; font-size: 15px; border-radius: 6px; border: 1px solid #d6d3cb; }
+
+    /* ---------- Customers table ---------- */
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid #eee; }
+    th { font-size: 13px; text-transform: uppercase; letter-spacing: 1px; color: #6b6b6b; }
+
+    /* ---------- Product form + list ---------- */
+input[type=text], input[type=number], textarea {
+  width: 100%; padding: 11px; font-size: 15px; font-family: inherit;
+  border: 1px solid #d6d3cb; border-radius: 6px;
+}
+textarea { min-height: 80px; resize: vertical; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 16px; }
+.grid .full { grid-column: 1 / -1; }
+.checks label { display: inline-block; font-weight: normal; margin-right: 20px; }
+.btn-small { background: #fff; border: 1px solid #d6d3cb; padding: 7px 12px; border-radius: 6px; font-size: 14px; margin-right: 6px; }
+.btn-small.danger { color: #b3261e; border-color: #e5b9b5; }
+.btn.secondary { background: #fff; color: #111; border: 1px solid #d6d3cb; margin-left: 8px; }
+
+
+/* ---------- Phone layout ---------- */
+@media (max-width: 800px) {
+  /* the sidebar becomes a bar across the top */
+  #dashboard { flex-direction: column; }
+  aside { width: 100%; padding: 14px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  aside .brand { margin: 0 12px 0 0; font-size: 18px; }
+  aside button.nav { width: auto; padding: 10px 14px; margin: 0; }
+  aside .logout { margin: 0 0 0 auto; padding: 10px; }
+
+  main { padding: 18px 14px; max-width: 100%; }
+  .card { padding: 18px; }
+
+  /* the product form goes to one column */
+  .grid { grid-template-columns: 1fr; }
+
+  /* wide tables scroll sideways instead of squashing */
+  .card:has(table) { overflow-x: auto; }
+  table { min-width: 480px; }
+
+  /* 16px text stops phones from zooming in on fields */
+  input, textarea, select { font-size: 16px; }
+  .btn-small { padding: 10px 14px; }
+  #loginView { margin: 30px auto; }
+}
+
+  </style>
+</head>
+<body>
+
+  <!-- ================= LOGIN VIEW ================= -->
+  <section id="loginView">
+    <h1>MONTRA Admin</h1>
+    <p>Please log in with an admin account.</p>
+    <div class="card">
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="admin@example.com">
+      <label for="password">Password</label>
+      <input type="password" id="password">
+      <button class="btn" id="loginBtn">Log In</button>
+      <div class="error" id="loginError"></div>
+    </div>
+  </section>
+
+  <!-- ================= DASHBOARD VIEW ================= -->
+  <div id="dashboard" hidden>
+    <aside>
+      <div class="brand">MONTRA</div>
+      <button class="nav" data-tab="orders">Orders</button>
+      <button class="nav" data-tab="products">Products</button>
+      <button class="nav" data-tab="customers">Customers</button>
+      <button class="logout" id="logoutBtn">Log out</button>
+    </aside>
+    <main>
+      <div id="content"></div>
+    </main>
+  </div>
+
+<script>
+  // ---------- Settings ----------
+  const API = 'http://localhost:3001';  // our backend address
+  const CURRENCY = '£';                 // change this if the shop uses another currency
+
+  // ---------- Helpers ----------
+
+  // Escapes text before putting it in the page, so nobody can inject HTML/scripts
+  function esc(text) {
+    return String(text ?? '').replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+  }
+
+  // One function for every backend call: it adds the login token automatically
+  async function api(path, options = {}) {
+    const token = localStorage.getItem('montraAdminToken');
+    const res = await fetch(API + path, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: 'Bearer ' + token } : {}),
+      },
+    });
+    const data = await res.json().catch(() => ({}));
+
+    // Token expired or not an admin: send them back to the login screen
+    if (res.status === 401 || res.status === 403) {
+      logout();
+      throw new Error(data.error || 'Not authorised');
+    }
+    if (!res.ok) throw new Error(data.error || 'Something went wrong');
+    return data;
+  }
+
+  // ---------- Login / logout ----------
+  const loginView = document.getElementById('loginView');
+  const dashboard = document.getElementById('dashboard');
+  const loginError = document.getElementById('loginError');
+
+  document.getElementById('loginBtn').addEventListener('click', async () => {
+    loginError.textContent = '';
+    try {
+      const res = await fetch(API + '/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: document.getElementById('email').value.trim(),
+          password: document.getElementById('password').value,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Login failed');
+
+      // Valid login, but is it an admin? (The server enforces this too.)
+      if (!data.user.isAdmin) throw new Error('This account is not an admin account');
+
+      localStorage.setItem('montraAdminToken', data.token);
+      showDashboard();
+    } catch (err) {
+      loginError.textContent = err.message;
+    }
+  });
+
+  function logout() {
+    localStorage.removeItem('montraAdminToken');
+    dashboard.hidden = true;
+    loginView.hidden = false;
+  }
+  document.getElementById('logoutBtn').addEventListener('click', logout);
+
+  // ---------- Dashboard / tabs ----------
+  const content = document.getElementById('content');
+
+  function showDashboard() {
+    loginView.hidden = true;
+    dashboard.hidden = false;
+    openTab('orders');
+  }
+
+  document.querySelectorAll('button.nav').forEach(btn => {
+    btn.addEventListener('click', () => openTab(btn.dataset.tab));
+  });
+
+  function openTab(tab) {
+    // highlight the active sidebar button
+    document.querySelectorAll('button.nav').forEach(b =>
+      b.classList.toggle('active', b.dataset.tab === tab));
+
+    if (tab === 'orders') loadOrders();
+    if (tab === 'customers') loadCustomers();
+    if (tab === 'products') loadProducts();
+  }
+
+  // ---------- Orders tab ----------
+  async function loadOrders() {
+    content.innerHTML = '<h2>Orders</h2><p class="muted">Loading...</p>';
+    try {
+      const orders = await api('/api/admin/orders');
+
+      if (orders.length === 0) {
+        content.innerHTML = '<h2>Orders</h2><div class="card">No orders yet.</div>';
+        return;
+      }
+
+      const statuses = ['paid', 'shipped', 'delivered', 'cancelled'];
+
+      content.innerHTML = '<h2>Orders</h2>' + orders.map(o => {
+        // if an old order has a status we don't list, still show it in the dropdown
+        const options = (statuses.includes(o.status) ? statuses : [o.status, ...statuses])
+          .map(s => `<option value="${esc(s)}" ${s === o.status ? 'selected' : ''}>${esc(s)}</option>`)
+          .join('');
+
+        const items = o.items.map(i => `
+          <li>${esc(i.product.name)} × ${i.quantity}
+            <span class="muted">${[i.size, i.color].filter(Boolean).map(esc).join(' / ')}</span>
+          </li>`).join('');
+
+        const address = [o.shippingName, o.address, o.city, o.postalCode, o.country]
+          .filter(Boolean).map(esc).join(', ');
+
+        return `
+          <div class="card order">
+            <div class="order-head">
+              <strong>Order #${o.id}</strong>
+              <span class="muted">${new Date(o.createdAt).toLocaleString()}</span>
+            </div>
+            <p class="muted">${esc(o.user.name)} (${esc(o.user.email)})</p>
+            <p class="muted">Ship to: ${address || 'No shipping details'}${o.phone ? ' · ' + esc(o.phone) : ''}</p>
+            <ul class="items">${items}</ul>
+            <div class="order-foot">
+              <strong>Total: ${CURRENCY}${o.total.toFixed(2)}</strong>
+              <select data-order="${o.id}">${options}</select>
+            </div>
+          </div>`;
+      }).join('');
+
+      // When the admin changes a dropdown, send the new status to the backend
+      content.querySelectorAll('select[data-order]').forEach(sel => {
+        sel.addEventListener('change', async () => {
+          try {
+            await api('/api/admin/orders/' + sel.dataset.order, {
+              method: 'PATCH',
+              body: JSON.stringify({ status: sel.value }),
+            });
+          } catch (err) {
+            alert(err.message);
+            loadOrders(); // put the dropdown back to the real value
+          }
+        });
+      });
+    } catch (err) {
+      content.innerHTML = '<h2>Orders</h2><div class="card error">' + esc(err.message) + '</div>';
+    }
+  }
+
+  // ---------- Customers tab ----------
+  async function loadCustomers() {
+    content.innerHTML = '<h2>Customers</h2><p class="muted">Loading...</p>';
+    try {
+      const customers = await api('/api/admin/customers');
+      content.innerHTML = '<h2>Customers</h2><div class="card"><table>' +
+        '<tr><th>Name</th><th>Email</th><th>Joined</th><th>Orders</th></tr>' +
+        customers.map(c => `
+          <tr>
+            <td>${esc(c.name)}${c.isAdmin ? ' <span class="muted">(admin)</span>' : ''}</td>
+            <td>${esc(c.email)}</td>
+            <td>${new Date(c.createdAt).toLocaleDateString()}</td>
+            <td>${c._count.orders}</td>
+          </tr>`).join('') +
+        '</table></div>';
+    } catch (err) {
+      content.innerHTML = '<h2>Customers</h2><div class="card error">' + esc(err.message) + '</div>';
+    }
+  }
+
+  // ---------- Products tab ----------
+let allProducts = [];   // the list currently shown
+let editingId = null;   // null = adding a new product, a number = editing that product
+
+async function loadProducts() {
+  content.innerHTML = '<h2>Products</h2><p class="muted">Loading...</p>';
+  try {
+    allProducts = await api('/api/products');
+    editingId = null;
+    renderProducts();
+  } catch (err) {
+    content.innerHTML = '<h2>Products</h2><div class="card error">' + esc(err.message) + '</div>';
+  }
+}
+
+// Draws the form (top) and the product table (below)
+function renderProducts() {
+  content.innerHTML = `
+    <h2>Products</h2>
+    <div class="card" style="margin-bottom:24px">
+      <h3 id="formTitle" style="margin-top:0">Add a product</h3>
+      <div class="grid">
+        <div><label>Name</label><input type="text" id="p_name"></div>
+
+<div>
+  <label>Image (upload, or paste a URL)</label>
+  <input type="file" id="p_file" accept="image/*">
+  <input type="text" id="p_image" placeholder="or paste an image URL" style="margin-top:8px">
+  <img id="p_preview" alt="" style="display:none;max-width:90px;margin-top:8px;border-radius:4px">
+</div>        
+        <div class="full"><label>Description</label><textarea id="p_description"></textarea></div>
+        <div><label>Price</label><input type="number" step="0.01" id="p_price"></div>
+        <div><label>Old price (optional)</label><input type="number" step="0.01" id="p_oldPrice"></div>
+        <div><label>Category</label><input type="text" id="p_category"></div>
+        <div><label>Collection</label><input type="text" id="p_collection"></div>
+        <div><label>Age group</label><input type="text" id="p_ageGroup"></div>
+        <div><label>Stock</label><input type="number" id="p_stock" value="0"></div>  
+        <div class="full"><label>Sizes (comma separated)</label><input type="text" id="p_sizes" placeholder="S,M,L,XL"></div>
+        <div class="full"><label>Colors (comma separated)</label><input type="text" id="p_colors" placeholder="Black,White,Olive"></div>        
+        <div class="full" id="colorImagesBox"></div> 
+        <div class="full"><label>Event tag (optional)</label><input type="text" id="p_eventTag"></div>
+        <div class="full checks" style="margin-top:12px">
+          <label><input type="checkbox" id="p_isBestSeller"> Best seller</label>
+          <label><input type="checkbox" id="p_isNewArrival"> New arrival</label>
+        </div>
+      </div>
+      <button class="btn" id="saveProductBtn">Save product</button>
+      <button class="btn secondary" id="cancelEditBtn" hidden>Cancel</button>
+      <div class="error" id="productError"></div>
+    </div>
+
+    <div class="card">
+      <table>
+        <tr><th>Name</th><th>Price</th><th>Stock</th><th></th></tr>
+        ${allProducts.map(p => `
+          <tr>
+            <td>${esc(p.name)}</td>
+            <td>${CURRENCY}${p.price.toFixed(2)}</td>
+            <td>${p.stock}</td>
+            <td>
+              <button class="btn-small" data-edit="${p.id}">Edit</button>
+              <button class="btn-small danger" data-delete="${p.id}">Delete</button>
+            </td>
+          </tr>`).join('')}
+      </table>
+    </div>`;
+
+  document.getElementById('saveProductBtn').addEventListener('click', saveProduct);
+  document.getElementById('p_file').addEventListener('change', handleImageFile);
+  document.getElementById('p_colors').addEventListener('input', renderColorBoxes);
+  colorImagesData = {};
+  renderColorBoxes();  
+
+  document.getElementById('cancelEditBtn').addEventListener('click', loadProducts);
+  content.querySelectorAll('[data-edit]').forEach(b =>
+    b.addEventListener('click', () => startEdit(parseInt(b.dataset.edit))));
+  content.querySelectorAll('[data-delete]').forEach(b =>
+    b.addEventListener('click', () => deleteProduct(parseInt(b.dataset.delete))));
+}
+
+// Small helper: read the value of a form field by id
+const val = id => document.getElementById(id).value.trim();
+
+// Fill the form with an existing product so it can be edited
+function startEdit(id) {
+  const p = allProducts.find(x => x.id === id);
+  editingId = id;
+  document.getElementById('formTitle').textContent = 'Edit product #' + id;
+  document.getElementById('cancelEditBtn').hidden = false;
+
+  document.getElementById('p_name').value = p.name;
+  document.getElementById('p_image').value = p.image;
+  document.getElementById('p_description').value = p.description;
+  document.getElementById('p_price').value = p.price;
+  document.getElementById('p_oldPrice').value = p.oldPrice ?? '';
+  document.getElementById('p_category').value = p.category;
+  document.getElementById('p_collection').value = p.collection;
+  document.getElementById('p_ageGroup').value = p.ageGroup;
+  document.getElementById('p_stock').value = p.stock;
+  document.getElementById('p_sizes').value = p.sizes ?? '';
+  document.getElementById('p_colors').value = p.colors ?? '';
+  try { colorImagesData = JSON.parse(p.colorImages || '{}'); } catch (e) { colorImagesData = {}; }
+  renderColorBoxes();  
+  document.getElementById('p_eventTag').value = p.eventTag ?? '';
+  document.getElementById('p_isBestSeller').checked = p.isBestSeller;
+  document.getElementById('p_isNewArrival').checked = p.isNewArrival;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Create a new product, or update the one being edited
+async function saveProduct() {
+  const errorBox = document.getElementById('productError');
+  errorBox.textContent = '';
+
+   const body = {
+    name: val('p_name'),
+    description: val('p_description'),
+    image: val('p_image'),
+    price: parseFloat(val('p_price')),
+    oldPrice: val('p_oldPrice') ? parseFloat(val('p_oldPrice')) : null,
+    category: val('p_category'),
+    collection: val('p_collection'),
+    ageGroup: val('p_ageGroup'),
+    stock: parseInt(val('p_stock') || '0'),
+    sizes: val('p_sizes') || 'S,M,L,XL',
+    colors: val('p_colors') || 'Black',
+    colorImages: JSON.stringify(cleanColorImages()),  
+    eventTag: val('p_eventTag') || null,
+    isBestSeller: document.getElementById('p_isBestSeller').checked,
+    isNewArrival: document.getElementById('p_isNewArrival').checked,
+  };
+
+  if (!body.name || !body.description || !body.image || !body.price ||
+      !body.category || !body.collection || !body.ageGroup) {
+    errorBox.textContent = 'Please fill in all the required fields.';
+    return;
+  }
+
+  try {
+    // editing -> PUT to that product, adding -> POST
+    await api(editingId ? '/api/admin/products/' + editingId : '/api/admin/products', {
+      method: editingId ? 'PUT' : 'POST',
+      body: JSON.stringify(body),
+    });
+    loadProducts(); // reload the list
+  } catch (err) {
+    errorBox.textContent = err.message;
+  }
+}
+
+async function deleteProduct(id) {
+  if (!confirm('Delete this product? This cannot be undone.')) return;
+  try {
+    await api('/api/admin/products/' + id, { method: 'DELETE' });
+    loadProducts();
+  } catch (err) {
+    // A product that's already been ordered can't be deleted (orders still point to it)
+    alert('Could not delete. If this product has been ordered before, set its stock to 0 instead.');
+  }
+}
+
+// Picks an image file, shrinks it to 900px, and stores it in the image field
+function handleImageFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      // scale down so the picture stays small (a few hundred KB at most)
+      const scale = Math.min(1, 900 / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+      document.getElementById('p_image').value = dataUrl;
+
+      const preview = document.getElementById('p_preview');
+      preview.src = dataUrl;
+      preview.style.display = 'block';
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ---------- Photos per color ----------
+let colorImagesData = {};   // color name -> its photo (a URL or uploaded image data)
+
+// The colors typed in the Colors field, as a clean list
+function colorList() {
+  return val('p_colors').split(',').map(s => s.trim()).filter(Boolean);
+}
+
+// Shrinks a picked file to 900px and hands back the result
+function shrinkImage(file, done) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, 900 / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      done(canvas.toDataURL('image/jpeg', 0.82));
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// Draws one upload row per color
+function renderColorBoxes() {
+  const box = document.getElementById('colorImagesBox');
+  const colors = colorList();
+  if (!colors.length) { box.innerHTML = ''; return; }
+
+  box.innerHTML = '<label>Photo for each color (optional)</label>' + colors.map(c => `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+      <strong style="min-width:90px">${esc(c)}</strong>
+      <input type="file" accept="image/*" data-color-file="${esc(c)}" style="flex:1">
+      <img src="${esc(colorImagesData[c] || '')}" alt="" style="width:44px;height:56px;object-fit:cover;border-radius:4px;${colorImagesData[c] ? '' : 'display:none'}">
+    </div>`).join('');
+
+  // When a file is picked, shrink it and remember it for that color
+  box.querySelectorAll('[data-color-file]').forEach(input => {
+    input.addEventListener('change', e => {
+      if (!e.target.files[0]) return;
+      shrinkImage(e.target.files[0], url => {
+        colorImagesData[input.dataset.colorFile] = url;
+        renderColorBoxes();
+      });
+    });
+  });
+}
+
+// Only keep photos for colors that are still listed
+function cleanColorImages() {
+  const out = {};
+  colorList().forEach(c => { if (colorImagesData[c]) out[c] = colorImagesData[c]; });
+  return out;
+}
+
+  // ---------- On page load: already logged in? ----------
+  if (localStorage.getItem('montraAdminToken')) showDashboard();
+</script>
+</body>
+</html>

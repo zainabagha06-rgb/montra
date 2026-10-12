@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shop — MONTRA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#0b0b0a;
+    --offwhite:#f4f2ec;
+    --warmwhite:#faf9f6;
+    --deepgrey:#3a3937;
+    --beige:#e6dfd0;
+    --brass:#a9865a;
+    --line: rgba(11,11,10,0.1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--warmwhite);color:var(--black);font-family:'Inter',sans-serif;overflow-x:hidden;}
+  a{color:inherit;text-decoration:none;}
+  img{display:block;max-width:100%;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+
+  /* ---------- Header ---------- */
+  header{
+    position:sticky;top:0;z-index:100;
+    background:rgba(250,249,246,0.92);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+  }
+  .header-inner{
+    max-width:1360px;margin:0 auto;padding:0 40px;height:72px;
+    display:flex;align-items:center;justify-content:space-between;gap:20px;
+  }
+  .logo{font-family:'Fraunces',serif;font-size:24px;letter-spacing:0.08em;font-weight:500;}
+  .search-form{flex:1;max-width:420px;position:relative;}
+  .search-form input{
+    width:100%;padding:11px 16px 11px 40px;font-size:14px;font-family:inherit;
+    border:1px solid #d6d3cb;border-radius:30px;background:#fff;
+  }
+  .search-form input:focus{outline:none;border-color:var(--black);}
+  .search-form svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;stroke:#888;fill:none;stroke-width:1.6;}
+  .header-links{display:flex;align-items:center;gap:26px;font-size:13px;letter-spacing:.05em;text-transform:uppercase;font-weight:500;}
+  .cart-link{position:relative;display:flex;align-items:center;}
+  .cart-link svg{width:19px;height:19px;stroke:var(--black);fill:none;stroke-width:1.4;}
+  .cart-count{
+    position:absolute;top:-7px;right:-9px;background:var(--black);color:var(--offwhite);
+    font-size:9px;width:15px;height:15px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+  }
+
+  /* ---------- Page ---------- */
+  main{max-width:1360px;margin:0 auto;padding:40px 40px 80px;}
+  .page-head{margin-bottom:30px;}
+  .eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--brass);font-weight:600;}
+  h1{font-family:'Fraunces',serif;font-weight:400;font-size:clamp(30px,4vw,46px);margin:10px 0 6px;letter-spacing:-0.01em;}
+  .result-count{font-size:14px;color:#888;}
+
+  .layout{display:grid;grid-template-columns:230px 1fr;gap:48px;align-items:start;}
+
+  /* ---------- Filters ---------- */
+  .filters{position:sticky;top:96px;}
+  .filter-group{margin-bottom:28px;}
+  .filter-group h4{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;margin-bottom:12px;}
+  .chips{display:flex;flex-direction:column;gap:2px;}
+  .chip{
+    text-align:left;padding:8px 10px;font-size:14px;color:var(--deepgrey);
+    border-left:2px solid transparent;transition:.2s;text-transform:capitalize;
+  }
+  .chip:hover{background:var(--beige);}
+  .chip.active{border-left-color:var(--black);color:var(--black);font-weight:600;background:var(--beige);}
+  .filters select{
+    width:100%;padding:11px;font-size:14px;font-family:inherit;border:1px solid #d6d3cb;background:#fff;
+  }
+  .check{display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;}
+  .check input{width:16px;height:16px;}
+  .clear-btn{font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:600;border-bottom:1px solid var(--black);padding-bottom:3px;}
+  .filter-toggle{display:none;}
+
+  /* ---------- Product grid ---------- */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:34px 24px;}
+  .card{position:relative;}
+  .thumb{position:relative;overflow:hidden;background:var(--beige);aspect-ratio:3/4;display:block;}
+  .thumb img{width:100%;height:100%;object-fit:cover;transition:transform .7s ease;}
+  .card:hover .thumb img{transform:scale(1.05);}
+  .tag{position:absolute;top:12px;left:12px;background:var(--black);color:var(--offwhite);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:5px 10px;z-index:2;}
+  .tag.sold{background:#777;}
+  .info{padding-top:14px;}
+  .info h3{font-size:14.5px;font-weight:500;margin-bottom:6px;}
+  .info h3 a:hover{text-decoration:underline;}
+  .price{font-size:14px;font-weight:600;display:flex;gap:8px;align-items:center;}
+  .price .old{color:#999;text-decoration:line-through;font-weight:400;font-size:13px;}
+  .empty{padding:80px 20px;text-align:center;color:#888;grid-column:1/-1;}
+  .empty a,.empty button{border-bottom:1px solid var(--black);color:var(--black);font-weight:600;}
+
+  /* ---------- Tablets and phones ---------- */
+  @media(max-width:1000px){
+    .grid{grid-template-columns:repeat(2,1fr);}
+  }
+  @media(max-width:860px){
+    .header-inner{padding:0 16px;height:64px;gap:12px;}
+    .header-links a.text-link{display:none;}
+    main{padding:24px 16px 60px;}
+    .layout{grid-template-columns:1fr;gap:20px;}
+    .grid{gap:24px 14px;}
+    .filter-toggle{
+      display:block;width:100%;padding:14px;border:1px solid #d6d3cb;background:#fff;
+      font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;
+    }
+    .filters{display:none;position:static;background:#fff;border:1px solid var(--line);padding:20px;}
+    .filters.open{display:block;}
+    .chip{padding:11px 10px;}   /* bigger tap targets */
+  }
+
+  .heart{position:absolute;top:12px;right:12px;z-index:3;width:36px;height:36px;border-radius:50%;background:rgba(250,249,246,.92);display:flex;align-items:center;justify-content:center;}
+.heart svg{width:15px;height:15px;stroke:var(--black);fill:none;stroke-width:1.4;}
+.heart.saved{background:var(--black);}
+.heart.saved svg{stroke:var(--offwhite);fill:var(--offwhite);}
+@media(max-width:860px){.heart{width:42px;height:42px;}}
+
+.toast{position:fixed;bottom:28px;left:50%;transform:translate(-50%,160%);background:var(--black);color:var(--offwhite);padding:14px 26px;font-size:13px;z-index:2000;transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .45s ease,visibility .45s;opacity:0;visibility:hidden;}
+.toast.show{transform:translate(-50%,0);opacity:1;visibility:visible;}
+
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="montra.html" class="logo">MONTRA</a>
+
+    <form class="search-form" id="searchForm">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" id="searchInput" placeholder="Search products" autocomplete="off">
+    </form>
+
+    <div class="header-links">
+      <a href="montra.html" class="text-link">Home</a>
+      <a href="montra.html#cart" class="cart-link" aria-label="Cart">
+        <svg viewBox="0 0 24 24"><path d="M6 6h15l-1.5 9h-12z"/><path d="M6 6L4 3H2"/><circle cx="9" cy="20" r="1"/><circle cx="17" cy="20" r="1"/></svg>
+        <span class="cart-count" id="cartCount">0</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="page-head">
+    <span class="eyebrow">MONTRA</span>
+    <h1 id="pageTitle">Shop</h1>
+    <div class="result-count" id="resultCount"></div>
+  </div>
+
+  <div class="layout">
+    <div>
+      <button class="filter-toggle" id="filterToggle" type="button">Filters &amp; sort</button>
+      <aside class="filters" id="filters"></aside>
+    </div>
+    <div class="grid" id="grid"><div class="empty">Loading...</div></div>
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = 'http://localhost:3001';
+
+  // ---------- Helpers ----------
+  function esc(text) {
+    return String(text ?? '').replace(/[&<>"']/g, c => (
+      { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+  }
+  const formatPrice = n => '£' + n.toLocaleString();
+  const getToken = () => localStorage.getItem('montra_token');
+
+  // ---------- State ----------
+  let allProducts = [];
+
+  // The filters currently applied. "" means "no filter".
+  const filters = {
+    q: '',            // search text
+    category: '',
+    collection: '',
+    ageGroup: '',
+    eventTag: '',
+    best: false,      // best sellers only
+    fresh: false,     // new arrivals only
+    inStock: false,
+    sort: 'featured',
+  };
+
+  // ---------- Read filters from the address (e.g. shop.html?category=hoodies) ----------
+  function readUrl() {
+    const p = new URLSearchParams(location.search);
+    filters.q = p.get('q') || '';
+    filters.category = p.get('category') || '';
+    filters.collection = p.get('collection') || '';
+    filters.ageGroup = p.get('ageGroup') || '';
+    filters.eventTag = p.get('eventTag') || '';
+    filters.best = p.get('best') === '1';
+    filters.fresh = p.get('new') === '1';
+  }
+
+  // Keep the address in sync, so the link can be shared and the back button behaves
+  function writeUrl() {
+    const p = new URLSearchParams();
+    if (filters.q) p.set('q', filters.q);
+    if (filters.category) p.set('category', filters.category);
+    if (filters.collection) p.set('collection', filters.collection);
+    if (filters.ageGroup) p.set('ageGroup', filters.ageGroup);
+    if (filters.eventTag) p.set('eventTag', filters.eventTag);
+    if (filters.best) p.set('best', '1');
+    if (filters.fresh) p.set('new', '1');
+    const qs = p.toString();
+    history.replaceState(null, '', qs ? '?' + qs : location.pathname);
+  }
+
+  // Case-insensitive comparison so "Hoodies" matches "hoodies"
+  const same = (a, b) => String(a || '').toLowerCase() === String(b || '').toLowerCase();
+
+  // ---------- Apply filters ----------
+  function getResults() {
+    let list = allProducts.filter(p => {
+      if (filters.category && !same(p.category, filters.category)) return false;
+      if (filters.collection && !same(p.collection, filters.collection)) return false;
+// "all ages" products show up under every age filter
+if (filters.ageGroup && !same(p.ageGroup, filters.ageGroup) && !same(p.ageGroup, 'all ages')) return false;      if (filters.eventTag && !same(p.eventTag, filters.eventTag)) return false;
+      if (filters.best && !p.isBestSeller) return false;
+      if (filters.fresh && !p.isNewArrival) return false;
+      if (filters.inStock && p.stock <= 0) return false;
+
+      // Search looks in the name, description, category and collection
+      if (filters.q) {
+        const text = [p.name, p.description, p.category, p.collection, p.eventTag].join(' ').toLowerCase();
+        // every word typed must appear somewhere
+        if (!filters.q.toLowerCase().split(/\s+/).every(word => text.includes(word))) return false;
+      }
+      return true;
+    });
+
+    if (filters.sort === 'low') list.sort((a, b) => a.price - b.price);
+    if (filters.sort === 'high') list.sort((a, b) => b.price - a.price);
+    if (filters.sort === 'newest') list.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    return list;
+  }
+
+  // ---------- Page title ----------
+  function titleText() {
+    if (filters.q) return 'Search: "' + filters.q + '"';
+    if (filters.eventTag) return filters.eventTag;
+    if (filters.best) return 'Best Sellers';
+    if (filters.fresh) return 'New Arrivals';
+    if (filters.category) return filters.category.charAt(0).toUpperCase() + filters.category.slice(1);
+    if (filters.collection) return filters.collection.charAt(0).toUpperCase() + filters.collection.slice(1) + ' Collection';
+    return 'Shop All';
+  }
+
+  // ---------- Draw the filter sidebar ----------
+  // The options are built from the real products, so new categories added in the admin appear automatically
+  function distinct(field) {
+    return [...new Set(allProducts.map(p => p[field]).filter(Boolean))].sort();
+  }
+
+  function chipGroup(title, field, values) {
+    if (values.length < 1) return '';
+    return `
+      <div class="filter-group">
+        <h4>${title}</h4>
+        <div class="chips">
+          <button type="button" class="chip ${!filters[field] ? 'active' : ''}" data-field="${field}" data-value="">All</button>
+          ${values.map(v => `<button type="button" class="chip ${same(filters[field], v) ? 'active' : ''}" data-field="${field}" data-value="${esc(v)}">${esc(v)}</button>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  function renderFilters() {
+    document.getElementById('filters').innerHTML = `
+      ${chipGroup('Category', 'category', distinct('category'))}
+      ${chipGroup('Collection', 'collection', distinct('collection'))}
+      ${chipGroup('Age group', 'ageGroup', distinct('ageGroup'))}
+      ${chipGroup('Event', 'eventTag', distinct('eventTag'))}
+
+      <div class="filter-group">
+        <h4>Sort by</h4>
+        <select id="sortSelect">
+          <option value="featured" ${filters.sort === 'featured' ? 'selected' : ''}>Featured</option>
+          <option value="newest" ${filters.sort === 'newest' ? 'selected' : ''}>Newest</option>
+          <option value="low" ${filters.sort === 'low' ? 'selected' : ''}>Price: low to high</option>
+          <option value="high" ${filters.sort === 'high' ? 'selected' : ''}>Price: high to low</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="check"><input type="checkbox" id="stockCheck" ${filters.inStock ? 'checked' : ''}> In stock only</label>
+      </div>
+
+      <button type="button" class="clear-btn" id="clearBtn">Clear all filters</button>`;
+
+    // Clicking a chip sets that filter
+    document.querySelectorAll('.chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        filters[btn.dataset.field] = btn.dataset.value;
+        update();
+      });
+    });
+    document.getElementById('sortSelect').addEventListener('change', e => { filters.sort = e.target.value; update(); });
+    document.getElementById('stockCheck').addEventListener('change', e => { filters.inStock = e.target.checked; update(); });
+    document.getElementById('clearBtn').addEventListener('click', clearAll);
+  }
+
+  function clearAll() {
+    Object.assign(filters, { q: '', category: '', collection: '', ageGroup: '', eventTag: '', best: false, fresh: false, inStock: false, sort: 'featured' });
+    document.getElementById('searchInput').value = '';
+    update();
+  }
+
+  // ---------- Draw the product grid ----------
+  function renderGrid() {
+    const results = getResults();
+    document.getElementById('pageTitle').textContent = titleText();
+    document.title = titleText() + ' — MONTRA';
+    document.getElementById('resultCount').textContent = results.length + (results.length === 1 ? ' product' : ' products');
+
+    const grid = document.getElementById('grid');
+    if (results.length === 0) {
+      grid.innerHTML = '<div class="empty">No products match your search.<br><br><button type="button" id="emptyClear">Clear filters</button></div>';
+      document.getElementById('emptyClear').addEventListener('click', clearAll);
+      return;
+    }
+
+    grid.innerHTML = results.map(p => {
+      const soldOut = p.stock <= 0;
+      const tag = soldOut ? '<span class="tag sold">Sold out</span>'
+                : p.isNewArrival ? '<span class="tag">New</span>'
+                : p.isBestSeller ? '<span class="tag">Best seller</span>' : '';
+      return `
+        <div class="card">
+          <a class="thumb" href="product.html?id=${p.id}">
+            ${tag}
+            <img src="${esc(p.image)}" alt="${esc(p.name)}" loading="lazy">
+          </a>
+          <div class="info">
+            <button type="button" class="heart ${wishIds.has(p.id) ? 'saved' : ''}" data-wish="${p.id}" onclick="toggleWishlist(${p.id})" aria-label="Save to wishlist"><svg viewBox="0 0 24 24"><path d="M12 21s-7.5-5-9.7-9.4C.6 8.2 2.2 5 5.4 5c1.8 0 3.3 1 4.1 2.3C10.3 6 11.8 5 13.6 5c3.2 0 4.8 3.2 3.1 6.6C19.5 16 12 21 12 21z"/></svg></button>
+            <h3><a href="product.html?id=${p.id}">${esc(p.name)}</a></h3>
+            <div class="price">
+              <span>${formatPrice(p.price)}</span>
+              ${p.oldPrice ? `<span class="old">${formatPrice(p.oldPrice)}</span>` : ''}
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  function update() {
+    writeUrl();
+    renderFilters();
+    renderGrid();
+  }
+
+  // ---------- Search box ----------
+  document.getElementById('searchForm').addEventListener('submit', e => {
+    e.preventDefault();
+    filters.q = document.getElementById('searchInput').value.trim();
+    update();
+  });
+
+  // ---------- Phone filter toggle ----------
+  document.getElementById('filterToggle').addEventListener('click', () => {
+    document.getElementById('filters').classList.toggle('open');
+  });
+
+  // ---------- Cart badge ----------
+  async function updateCartBadge() {
+    const badge = document.getElementById('cartCount');
+    if (!getToken()) { badge.textContent = 0; return; }
+    try {
+      const res = await fetch(API + '/api/cart', { headers: { Authorization: 'Bearer ' + getToken() } });
+      badge.textContent = res.ok ? (await res.json()).length : 0;
+    } catch (err) {
+      badge.textContent = 0;
+    }
+  }
+
+  // ---------- Start ----------
+  async function init() {
+    readUrl();
+    document.getElementById('searchInput').value = filters.q;
+    try {
+      const res = await fetch(API + '/api/products');
+      allProducts = await res.json();
+      update();
+    } catch (err) {
+      document.getElementById('grid').innerHTML = '<div class="empty">Could not load products. Is the server running?</div>';
+    }
+  }
+
+  init();
+  updateCartBadge();
+
+  // ---------- Wishlist ----------
+let wishIds = new Set();   // ids of the products this customer has saved
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function markHearts() {
+  document.querySelectorAll('[data-wish]').forEach(btn => {
+    btn.classList.toggle('saved', wishIds.has(parseInt(btn.dataset.wish)));
+  });
+}
+
+async function loadWishlist() {
+  if (!getToken()) return;
+  try {
+    const res = await fetch(API + '/api/wishlist', { headers: { Authorization: 'Bearer ' + getToken() } });
+    if (!res.ok) return;
+    wishIds = new Set((await res.json()).map(i => i.productId));
+    markHearts();
+  } catch (err) { console.error(err); }
+}
+
+async function toggleWishlist(productId) {
+  // Not logged in: send them to the login popup on the home page
+  if (!getToken()) { location.href = 'montra.html#login'; return; }
+  const saved = wishIds.has(productId);
+  try {
+    const res = await fetch(API + '/api/wishlist' + (saved ? '/' + productId : ''), {
+      method: saved ? 'DELETE' : 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + getToken() },
+      body: saved ? undefined : JSON.stringify({ productId }),
+    });
+    if (!res.ok) throw new Error();
+    if (saved) wishIds.delete(productId); else wishIds.add(productId);
+    markHearts();
+    showToast(saved ? 'Removed from wishlist' : 'Saved to wishlist');
+  } catch (err) {
+    showToast('Could not update your wishlist');
+  }
+}
+
+loadWishlist();
+
+</script>
+</body>
+</html>
