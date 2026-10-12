@@ -32,6 +32,8 @@ const products = [
 ];
 
 async function main() {
+  // skip if the database already has products
+  if (await prisma.product.count() > 0) { console.log('Already seeded'); return; }  
   for (const p of products) {
     await prisma.product.create({
       data: {
